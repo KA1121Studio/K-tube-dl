@@ -1,0 +1,601 @@
+
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>ホーム</title>
+  <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/1/19/Google_Classroom_Logo.svg">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: radial-gradient(circle at 20% 30%, #0a0f1a, #03060c);
+      font-family: 'Poppins', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: #f0f3fa;
+    }
+
+    /* スクロールバーカスタム */
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1a1f2e;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #3b4b6e;
+      border-radius: 10px;
+    }
+
+    /* メインラッパー (選択画面用) */
+    .selector-screen {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1.5rem;
+      transition: opacity 0.4s ease, visibility 0.4s;
+    }
+
+    .selector-screen.hide {
+      opacity: 0;
+      visibility: hidden;
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .glass-card {
+      background: rgba(15, 25, 45, 0.65);
+      backdrop-filter: blur(14px);
+      border-radius: 2.5rem;
+      border: 1px solid rgba(72, 187, 255, 0.25);
+      box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 255, 255, 0.1) inset;
+      padding: 2rem 2rem 2rem;
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+
+    .header-selector {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 2rem;
+    }
+
+    .logo {
+      font-size: 1.7rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #aaffff, #5f9eff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.3px;
+    }
+
+    .lang-btn {
+      background: rgba(30, 40, 60, 0.7);
+      border: 1px solid rgba(100, 150, 255, 0.5);
+      color: #eef5ff;
+      padding: 0.5rem 1.1rem;
+      border-radius: 40px;
+      font-weight: 500;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      transition: all 0.2s;
+      font-size: 0.85rem;
+    }
+
+    .lang-btn:hover {
+      background: #2a3a5a;
+      border-color: #5f9eff;
+      box-shadow: 0 0 8px #3e7eff66;
+      transform: scale(0.97);
+    }
+
+    .glow-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin: 1rem 0 0.5rem;
+      background: linear-gradient(145deg, #ffffff, #9bc0ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .sub {
+      color: #b0c4ff;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 2rem 0 1rem;
+    }
+
+    .server-btn {
+      background: linear-gradient(125deg, #0f172a, #111827);
+      border: 1px solid rgba(0, 255, 255, 0.4);
+      padding: 0.9rem 1.9rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+      border-radius: 60px;
+      cursor: pointer;
+      transition: 0.25s ease;
+      color: #e2eaff;
+      backdrop-filter: blur(4px);
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+    }
+
+    .server-btn.render-btn {
+      box-shadow: 0 0 6px #46b3ff66;
+    }
+
+    .server-btn.vercel-btn {
+      box-shadow: 0 0 6px #ffffff66;
+    }
+
+    .server-btn:hover {
+      transform: translateY(-4px);
+      background: linear-gradient(135deg, #1a2a44, #0f172a);
+      border-color: #6aa9ff;
+      box-shadow: 0 12px 20px -5px #00a6ff40;
+    }
+
+    .server-btn:active {
+      transform: translateY(2px);
+    }
+
+    /* 全画面埋め込みモード (ヘッダーなし) */
+    .fullscreen-embed {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      z-index: 1000;
+      display: flex;
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0.2s, opacity 0.25s ease;
+    }
+
+    .fullscreen-embed.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .iframe-full {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #010101;
+    }
+
+    /* クールな起動アニメーション (フルスクリーンオーバーレイ) */
+    .launch-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #010b1a, #000000);
+      z-index: 2000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      transition: opacity 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      opacity: 0;
+      visibility: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    .launch-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .neon-loader {
+      position: relative;
+      width: 120px;
+      height: 120px;
+    }
+
+    .neon-loader .ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      border-top-color: #0ff;
+      border-right-color: #f0f;
+      animation: spin 1.2s linear infinite;
+    }
+
+    .neon-loader .ring2 {
+      width: 80%;
+      height: 80%;
+      top: 10%;
+      left: 10%;
+      border-top-color: #ff66cc;
+      border-right-color: #ffcc33;
+      animation: spin 0.9s reverse infinite;
+    }
+
+    .neon-loader .ring3 {
+      width: 50%;
+      height: 50%;
+      top: 25%;
+      left: 25%;
+      border-top-color: #33ffcc;
+      border-left-color: #3399ff;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .launch-text-glow {
+      margin-top: 2rem;
+      font-size: 1.7rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #c0e0ff, #8cb3ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 8px #00a6ff40;
+      animation: pulse 1.2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.6; text-shadow: 0 0 2px cyan; }
+      100% { opacity: 1; text-shadow: 0 0 16px cyan; }
+    }
+
+    /* モーダル (言語ポップアップ) */
+    .modal-lang {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      justify-content: center;
+      align-items: center;
+      z-index: 3000;
+    }
+
+    .modal-lang.open {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #111c2ee6;
+      border-radius: 2rem;
+      padding: 1.8rem;
+      width: 280px;
+      text-align: center;
+      border: 1px solid #5a7cbb;
+      box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+    }
+
+    .modal-content h3 {
+      margin-bottom: 1.2rem;
+      font-size: 1.5rem;
+    }
+
+    .lang-options button {
+      background: #1f2e46;
+      border: none;
+      padding: 10px;
+      margin: 8px 0;
+      width: 100%;
+      border-radius: 60px;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+
+    .lang-options button:hover {
+      background: #2d4570;
+      transform: scale(0.98);
+    }
+
+    .close-modal-btn {
+      background: #31516b;
+      border: none;
+      margin-top: 16px;
+      padding: 8px;
+      border-radius: 30px;
+      color: white;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      transform: none;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 550px) {
+      .glass-card { padding: 1.5rem; }
+      .glow-title { font-size: 1.7rem; }
+      .server-btn { padding: 0.7rem 1.2rem; font-size: 1rem; }
+    }
+.server-btn.vercel-btn {
+  position: relative;
+}
+
+.server-btn.vercel-btn::after {
+  content: "NEW";
+  position: absolute;
+
+  top: -14px;
+  right: -20px;
+
+  background: #ff3b30;
+  color: #fff;
+
+  font-size: 0.85rem;
+  font-weight: 700;
+
+  padding: 5px 14px;
+  border-radius: 999px;
+
+  line-height: 1;
+  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.35);
+
+  z-index: 10;
+}
+  </style>
+</head>
+<body>
+
+<!-- サーバー選択画面 (初期表示) -->
+<div id="selectorScreen" class="selector-screen">
+  <div class="glass-card">
+    <div class="header-selector">
+      <span class="logo">⚡ K-tube</span>
+      <button id="langBtnSelector" class="lang-btn">🌐 言語</button>
+    </div>
+    <div class="glow-title" id="selectorMainTitle">サーバーを選択</div>
+    <div class="sub" id="selectorSub">高速ストリーミング起動</div>
+    <div class="button-group">
+      <button id="renderSelectBtn" class="server-btn render-btn">✨ Render</button>
+      <button id="vercelSelectBtn" class="server-btn vercel-btn">▲ Vercel</button>
+    </div>
+    <!-- 注意書きを完全に削除（ユーザー要求） -->
+  </div>
+</div>
+
+<!-- 全画面埋め込みコンテナ (ヘッダーなし) -->
+<div id="fullscreenEmbed" class="fullscreen-embed">
+  <iframe id="fullIframe" class="iframe-full" title="K-tube full" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"></iframe>
+</div>
+
+<!-- 起動アニメーションオーバーレイ -->
+<div id="launchAnimation" class="launch-overlay">
+  <div class="neon-loader">
+    <div class="ring"></div>
+    <div class="ring ring2"></div>
+    <div class="ring ring3"></div>
+  </div>
+  <div id="launchText" class="launch-text-glow">🚀 LAUNCHING</div>
+</div>
+
+<!-- 言語ポップアップモーダル -->
+<div id="langModal" class="modal-lang">
+  <div class="modal-content">
+    <h3 id="modalLangTitle">🌍 言語選択</h3>
+    <div class="lang-options">
+      <button data-lang="ja">🇯🇵 日本語</button>
+      <button data-lang="en">🇺🇸 English</button>
+      <button data-lang="zh">🇨🇳 中文</button>
+    </div>
+    <button id="closeModalGlobal" class="close-modal-btn">閉じる</button>
+  </div>
+</div>
+
+<script>
+  // ----- 多言語辞書 -----
+  const i18n = {
+    ja: {
+      selectTitle: "サーバーを選択",
+      selectSub: "高速ストリーミング起動",
+      render: "✨ Render",
+      vercel: "▲ Vercel",
+      langBtn: "🌐 言語",
+      launching: "🚀 起動中",
+      modalTitle: "🌍 言語選択"
+    },
+    en: {
+      selectTitle: "Select Server",
+      selectSub: "High-speed streaming",
+      render: "✨ Render",
+      vercel: "▲ Vercel",
+      langBtn: "🌐 Language",
+      launching: "🚀 LAUNCHING",
+      modalTitle: "🌍 Select Language"
+    },
+    zh: {
+      selectTitle: "选择服务器",
+      selectSub: "高速流式传输",
+      render: "✨ Render",
+      vercel: "▲ Vercel",
+      langBtn: "🌐 语言",
+      launching: "🚀 启动中",
+      modalTitle: "🌍 选择语言"
+    }
+  };
+
+  const SERVER_URLS = {
+    render: "https://k-tube-for-public-release-rpwm.onrender.com",
+    vercel: "https://k-tube-for-public-release-2.vercel.app/#"
+  };
+
+  let currentLang = "ja";
+  let isAnimating = false;
+  let fullscreenActive = false;
+
+  // DOM エレメント
+  const selectorScreen = document.getElementById("selectorScreen");
+  const fullscreenContainer = document.getElementById("fullscreenEmbed");
+  const fullIframe = document.getElementById("fullIframe");
+  const launchOverlay = document.getElementById("launchAnimation");
+  const launchTextSpan = document.getElementById("launchText");
+  const langModal = document.getElementById("langModal");
+  const renderBtnSel = document.getElementById("renderSelectBtn");
+  const vercelBtnSel = document.getElementById("vercelSelectBtn");
+  const langBtnSelector = document.getElementById("langBtnSelector");
+  const closeModalBtn = document.getElementById("closeModalGlobal");
+  const selectorMainTitle = document.getElementById("selectorMainTitle");
+  const selectorSub = document.getElementById("selectorSub");
+  const modalLangTitle = document.getElementById("modalLangTitle");
+
+  // 言語UI更新
+  function updateLanguageUI() {
+    const t = i18n[currentLang];
+    selectorMainTitle.innerText = t.selectTitle;
+    selectorSub.innerText = t.selectSub;
+    renderBtnSel.innerText = t.render;
+    vercelBtnSel.innerText = t.vercel;
+    langBtnSelector.innerText = t.langBtn;
+    modalLangTitle.innerText = t.modalTitle;
+    if (launchTextSpan && !isAnimating) launchTextSpan.innerText = t.launching;
+    else if (launchTextSpan && isAnimating) launchTextSpan.innerText = t.launching;
+  }
+
+  function openModal() {
+    langModal.classList.add("open");
+  }
+  function closeModal() {
+    langModal.classList.remove("open");
+  }
+
+  function setLanguage(lang) {
+    if (lang === currentLang) {
+      closeModal();
+      return;
+    }
+    currentLang = lang;
+    updateLanguageUI();
+    closeModal();
+  }
+
+  // アニメーション表示＆iframe読み込み (全画面表示)
+  function showLaunchAndLoadFullscreen(serverKey) {
+    if (isAnimating) return;
+    const url = SERVER_URLS[serverKey];
+    if (!url) return;
+
+    isAnimating = true;
+    launchTextSpan.innerText = i18n[currentLang].launching;
+    launchOverlay.classList.add("show");
+    
+    let loadCompleted = false;
+    function onIframeLoad() {
+      if (loadCompleted) return;
+      loadCompleted = true;
+      setTimeout(() => {
+        if (isAnimating) {
+          finishAnimationAndShowFullscreen();
+        }
+      }, 500);
+      fullIframe.removeEventListener("load", onIframeLoad);
+    }
+    fullIframe.addEventListener("load", onIframeLoad);
+    let timeout = setTimeout(() => {
+      if (!loadCompleted) {
+        loadCompleted = true;
+        finishAnimationAndShowFullscreen();
+      }
+    }, 6000);
+    
+    fullIframe.src = url;
+    
+    function finishAnimationAndShowFullscreen() {
+      clearTimeout(timeout);
+      if (!isAnimating) return;
+      launchOverlay.classList.remove("show");
+      isAnimating = false;
+      selectorScreen.classList.add("hide");
+      fullscreenContainer.classList.add("active");
+      fullscreenActive = true;
+    }
+  }
+  
+  // 全画面モード終了＆サーバー選択画面へ戻る
+  function exitToServerSelection() {
+    if (!fullscreenActive) return;
+    fullscreenContainer.classList.remove("active");
+    selectorScreen.classList.remove("hide");
+    fullscreenActive = false;
+    fullIframe.src = "about:blank";
+  }
+  
+  function handleServerSelect(serverKey) {
+    if (isAnimating) return;
+    if (fullscreenActive) {
+      exitToServerSelection();
+      setTimeout(() => {
+        showLaunchAndLoadFullscreen(serverKey);
+      }, 80);
+    } else {
+      showLaunchAndLoadFullscreen(serverKey);
+    }
+  }
+  
+  // イベントリスナー
+  renderBtnSel.addEventListener("click", () => handleServerSelect("render"));
+  vercelBtnSel.addEventListener("click", () => handleServerSelect("vercel"));
+  langBtnSelector.addEventListener("click", openModal);
+  closeModalBtn.addEventListener("click", closeModal);
+  langModal.addEventListener("click", (e) => {
+    if (e.target === langModal) closeModal();
+  });
+  
+  // 言語オプション
+  document.querySelectorAll("[data-lang]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const langVal = e.currentTarget.getAttribute("data-lang");
+      if (langVal === "ja") setLanguage("ja");
+      else if (langVal === "en") setLanguage("en");
+      else if (langVal === "zh") setLanguage("zh");
+    });
+  });
+  
+  // ESCキーで全画面終了
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && fullscreenActive) {
+      exitToServerSelection();
+    }
+  });
+  
+  // 初期言語適用
+  updateLanguageUI();
+</script>
+</body>
+</html>
