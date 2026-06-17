@@ -3,7 +3,10 @@
   "routes": [
     {
       "src": "/dl/(.*)",
-      "dest": "/api/dl/$1"
+      "dest": "/dl/$1",
+      "headers": {
+        "Content-Disposition": "attachment"
+      }
     },
     {
       "src": "/api/(.*)",
