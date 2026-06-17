@@ -1,0 +1,11 @@
+{
+  "name": "vercel-dl-site",
+  "version": "1.0.0",
+  "description": "Simple download site for Vercel",
+  "main": "index.js",
+  "scripts": {
+    "start": "vercel dev"
+  },
+  "author": "",
+  "license": "MIT"
+}
