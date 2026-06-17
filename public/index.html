@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ダウンロードサイト</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        /* ===== リセット & ベース ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 880px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 20px 60px rgba(0, 20, 40, 0.12);
+            padding: 40px 36px 48px;
+            transition: all 0.2s;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .header-left i {
+            font-size: 34px;
+            color: #2563eb;
+            background: #e8effd;
+            padding: 12px;
+            border-radius: 16px;
+        }
+        .header-left h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #0b1e33;
+            letter-spacing: -0.3px;
+        }
+        .header-left h1 span {
+            color: #2563eb;
+        }
+        .file-count {
+            background: #eef2f6;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #2c3e50;
+            white-space: nowrap;
+        }
+        .file-count i {
+            margin-right: 6px;
+            color: #2563eb;
+        }
+        .download-form {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        .download-form .input-wrap {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+        .download-form .input-wrap i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8a9aa8;
+            font-size: 16px;
+        }
+        .download-form input {
+            width: 100%;
+            padding: 14px 18px 14px 46px;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 16px;
+            background: #fafcff;
+            transition: 0.2s;
+            outline: none;
+            color: #0b1e33;
+        }
+        .download-form input:focus {
+            border-color: #2563eb;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+        }
+        .download-form input::placeholder {
+            color: #a0b3c4;
+        }
+        .download-form .btn-download {
+            padding: 14px 32px;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.2s;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.30);
+        }
+        .download-form .btn-download:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+        }
+        .download-form .btn-download:active {
+            transform: translateY(0px);
+        }
+        .download-form .btn-download i {
+            font-size: 18px;
+        }
+        .hint {
+            font-size: 14px;
+            color: #6b7f90;
+            margin: -18px 0 24px 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .hint i {
+            color: #2563eb;
+        }
+        .hint code {
+            background: #eef2f6;
+            padding: 2px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #1e3a5f;
+        }
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #edf2f7;
+            padding-bottom: 12px;
+        }
+        .list-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0b1e33;
+        }
+        .list-header h2 i {
+            color: #2563eb;
+            margin-right: 8px;
+        }
+        .list-header .search-box {
+            position: relative;
+        }
+        .list-header .search-box input {
+            padding: 8px 14px 8px 36px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 40px;
+            font-size: 14px;
+            background: #fafcff;
+            outline: none;
+            width: 200px;
+            transition: 0.2s;
+        }
+        .list-header .search-box input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+        }
+        .list-header .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8a9aa8;
+            font-size: 14px;
+        }
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+            margin-top: 6px;
+        }
+        .file-card {
+            background: #fafcff;
+            border: 1.5px solid #eef2f6;
+            border-radius: 18px;
+            padding: 20px 18px 18px;
+            transition: 0.2s;
+            cursor: default;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            position: relative;
+        }
+        .file-card:hover {
+            border-color: #2563eb;
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
+            transform: translateY(-3px);
+        }
+        .file-card .file-icon {
+            font-size: 32px;
+            color: #2563eb;
+            margin-bottom: 8px;
+            background: #e8effd;
+            padding: 10px;
+            border-radius: 14px;
+            line-height: 1;
+        }
+        .file-card .file-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: #0b1e33;
+            word-break: break-all;
+            margin-bottom: 6px;
+            width: 100%;
+            line-height: 1.3;
+        }
+        .file-card .file-meta {
+            font-size: 12px;
+            color: #7a8f9e;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+        .file-card .file-meta i {
+            margin-right: 3px;
+            font-size: 12px;
+        }
+        .file-card .btn-sm {
+            padding: 8px 18px;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: auto;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.20);
+        }
+        .file-card .btn-sm:hover {
+            background: #1d4ed8;
+            transform: scale(1.02);
+        }
+        .file-card .btn-sm i {
+            font-size: 14px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px 30px;
+            color: #7a8f9e;
+        }
+        .empty-state i {
+            font-size: 56px;
+            color: #d0dce8;
+            margin-bottom: 16px;
+            display: block;
+        }
+        .empty-state p {
+            font-size: 16px;
+        }
+        .empty-state .sub {
+            font-size: 14px;
+            color: #a0b3c4;
+            margin-top: 6px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #0b1e33;
+            color: #fff;
+            padding: 14px 30px;
+            border-radius: 60px;
+            font-size: 15px;
+            font-weight: 500;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 999;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0px);
+        }
+        .toast i {
+            font-size: 20px;
+        }
+        .toast.error i {
+            color: #f87171;
+        }
+        .toast.success i {
+            color: #6ee7b7;
+        }
+        @media (max-width: 640px) {
+            .container {
+                padding: 24px 18px 32px;
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .header-left h1 {
+                font-size: 22px;
+            }
+            .download-form {
+                flex-direction: column;
+            }
+            .download-form .btn-download {
+                justify-content: center;
+            }
+            .list-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .list-header .search-box input {
+                width: 100%;
+            }
+            .file-grid {
+                grid-template-columns: 1fr;
+            }
+            .hint {
+                font-size: 13px;
+            }
+            .toast {
+                width: 90%;
+                font-size: 14px;
+                padding: 12px 20px;
+            }
+        }
+        @media (min-width: 641px) and (max-width: 880px) {
+            .file-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            }
+        }
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.25);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .size-unit {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <div class="header">
+            <div class="header-left">
+                <i class="fas fa-cloud-arrow-down"></i>
+                <h1>DL<span>サイト</span></h1>
+            </div>
+            <div class="file-count" id="fileCount">
+                <i class="fas fa-file"></i> <span id="countNum">0</span> ファイル
+            </div>
+        </div>
+
+        <form class="download-form" id="downloadForm" autocomplete="off">
+            <div class="input-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" id="fileNameInput" placeholder="ファイル名を入力してダウンロード" autofocus />
+            </div>
+            <button type="submit" class="btn-download" id="downloadBtn">
+                <i class="fas fa-download"></i> ダウンロード
+            </button>
+        </form>
+
+        <div class="hint">
+            <i class="fas fa-lightbulb"></i>
+            例: <code>sample.png</code> または <code>document.pdf</code>
+            &nbsp;—&nbsp; URL直接: <code>/dl/ファイル名</code> で自動ダウンロード
+        </div>
+
+        <div class="list-header">
+            <h2><i class="fas fa-list-ul"></i> ファイル一覧</h2>
+            <div class="search-box">
+                <i class="fas fa-filter"></i>
+                <input type="text" id="filterInput" placeholder="フィルタ..." />
+            </div>
+        </div>
+
+        <div class="file-grid" id="fileGrid">
+            <!-- JS でレンダリング -->
+        </div>
+    </div>
+
+    <div class="toast" id="toast">
+        <i class="fas fa-circle-check"></i>
+        <span id="toastMessage">メッセージ</span>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            const grid = document.getElementById('fileGrid');
+            const countNum = document.getElementById('countNum');
+            const filterInput = document.getElementById('filterInput');
+            const fileNameInput = document.getElementById('fileNameInput');
+            const downloadForm = document.getElementById('downloadForm');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+
+            let allFiles = [];
+
+            function formatSize(bytes) {
+                if (bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                const val = (bytes / Math.pow(k, i)).toFixed(i > 0 ? 1 : 0);
+                return val + ' ' + sizes[i];
+            }
+
+            function formatDate(ts) {
+                const d = new Date(ts);
+                return d.toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' });
+            }
+
+            function getFileIcon(name) {
+                const ext = name.split('.').pop().toLowerCase();
+                const map = {
+                    'png': 'fa-image', 'jpg': 'fa-image', 'jpeg': 'fa-image', 'gif': 'fa-image',
+                    'svg': 'fa-image', 'webp': 'fa-image', 'pdf': 'fa-file-pdf',
+                    'doc': 'fa-file-word', 'docx': 'fa-file-word', 'xls': 'fa-file-excel',
+                    'xlsx': 'fa-file-excel', 'ppt': 'fa-file-powerpoint', 'pptx': 'fa-file-powerpoint',
+                    'txt': 'fa-file-lines', 'zip': 'fa-file-zipper', 'rar': 'fa-file-zipper',
+                    '7z': 'fa-file-zipper', 'tar': 'fa-file-zipper', 'gz': 'fa-file-zipper',
+                    'mp4': 'fa-file-video', 'avi': 'fa-file-video', 'mov': 'fa-file-video',
+                    'mkv': 'fa-file-video', 'mp3': 'fa-file-audio', 'wav': 'fa-file-audio',
+                    'flac': 'fa-file-audio', 'json': 'fa-file-code', 'xml': 'fa-file-code',
+                    'html': 'fa-file-code', 'css': 'fa-file-code', 'js': 'fa-file-code',
+                    'exe': 'fa-file', 'msi': 'fa-file', 'apk': 'fa-file',
+                };
+                return map[ext] || 'fa-file';
+            }
+
+            let toastTimer = null;
+
+            function showToast(message, type = 'success') {
+                if (toastTimer) {
+                    clearTimeout(toastTimer);
+                    toast.classList.remove('show');
+                }
+                toastMessage.textContent = message;
+                toast.className = 'toast ' + type;
+                const icon = toast.querySelector('i');
+                if (type === 'error') {
+                    icon.className = 'fas fa-circle-exclamation';
+                } else {
+                    icon.className = 'fas fa-circle-check';
+                }
+                requestAnimationFrame(() => {
+                    toast.classList.add('show');
+                });
+                toastTimer = setTimeout(() => {
+                    toast.classList.remove('show');
+                    toastTimer = null;
+                }, 3200);
+            }
+
+            async function fetchFileList() {
+                try {
+                    const res = await fetch('/api/files');
+                    if (!res.ok) throw new Error('API エラー: ' + res.status);
+                    const data = await res.json();
+                    allFiles = data.map(f => ({
+                        name: f.name,
+                        size: f.size || 0,
+                        modified: f.modified || Date.now(),
+                    }));
+                    allFiles.sort((a, b) => a.name.localeCompare(b.name));
+                    renderFileList();
+                } catch (err) {
+                    console.error('ファイル一覧取得エラー:', err);
+                    showToast('ファイル一覧の取得に失敗しました', 'error');
+                    grid.innerHTML = `
+                        <div class="empty-state" style="grid-column:1/-1;">
+                            <i class="fas fa-triangle-exclamation"></i>
+                            <p>ファイル一覧を読み込めませんでした</p>
+                            <div class="sub">サーバーが起動しているか確認してください</div>
+                        </div>
+                    `;
+                    countNum.textContent = '0';
+                }
+            }
+
+            function renderFileList(filter = '') {
+                const keyword = filter.trim().toLowerCase();
+                const filtered = keyword ?
+                    allFiles.filter(f => f.name.toLowerCase().includes(keyword)) :
+                    allFiles;
+
+                countNum.textContent = filtered.length;
+
+                if (filtered.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state" style="grid-column:1/-1;">
+                            <i class="fas fa-folder-open"></i>
+                            <p>${keyword ? '条件に一致するファイルがありません' : 'ダウンロード可能なファイルがありません'}</p>
+                            <div class="sub">${keyword ? '検索ワードを変えてみてください' : 'dl-file/ フォルダにファイルを追加してください'}</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                for (const f of filtered) {
+                    const icon = getFileIcon(f.name);
+                    const sizeStr = formatSize(f.size);
+                    const dateStr = formatDate(f.modified);
+                    html += `
+                        <div class="file-card" data-name="${escapeHtml(f.name)}">
+                            <div class="file-icon"><i class="fas ${icon}"></i></div>
+                            <div class="file-name" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</div>
+                            <div class="file-meta">
+                                <span><i class="fas fa-weight-scale"></i> ${sizeStr}</span>
+                                <span><i class="far fa-calendar"></i> ${dateStr}</span>
+                            </div>
+                            <button class="btn-sm" data-file="${escapeHtml(f.name)}">
+                                <i class="fas fa-download"></i> ダウンロード
+                            </button>
+                        </div>
+                    `;
+                }
+                grid.innerHTML = html;
+
+                grid.querySelectorAll('.btn-sm').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const name = this.getAttribute('data-file');
+                        if (name) triggerDownload(name);
+                    });
+                });
+
+                grid.querySelectorAll('.file-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        const name = this.getAttribute('data-name');
+                        if (name) triggerDownload(name);
+                    });
+                });
+            }
+
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            function triggerDownload(filename) {
+                if (!filename) return;
+                const encoded = encodeURIComponent(filename);
+                const url = '/dl/' + encoded;
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToast(`「${filename}」のダウンロードを開始しました`, 'success');
+            }
+
+            downloadForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const val = fileNameInput.value.trim();
+                if (!val) {
+                    showToast('ファイル名を入力してください', 'error');
+                    return;
+                }
+                const exists = allFiles.some(f => f.name === val);
+                if (!exists) {
+                    showToast(`「${val}」は一覧にありませんが、ダウンロードを試みます`, 'error');
+                }
+                triggerDownload(val);
+                fileNameInput.value = '';
+            });
+
+            filterInput.addEventListener('input', function() {
+                renderFileList(this.value);
+            });
+
+            async function init() {
+                await fetchFileList();
+                if (allFiles.length > 0) {
+                    fileNameInput.placeholder = `例: ${allFiles[0].name}`;
+                }
+            }
+
+            // 30秒ごとに更新
+            setInterval(() => {
+                fetchFileList().catch(() => {});
+            }, 30000);
+
+            init();
+
+            window.__app = { allFiles, fetchFileList, triggerDownload };
+        })();
+    </script>
+</body>
+</html>
